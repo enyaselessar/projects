@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load and print logo
-source <(curl -s https://raw.githubusercontent.com/enyaselessar/logo/refs/heads/main/common.sh)
+source <(curl -s https://raw.githubusercontent.com/enyaselessar/Logo/main/logo.sh)
 printLogo
 
 # Step 1: Update and Upgrade VPS
