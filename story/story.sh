@@ -38,6 +38,7 @@ tar -xzf /tmp/story-linux-amd64-0.10.1-57567e5.tar.gz -C /tmp
 sudo cp /tmp/story-linux-amd64-0.10.1-57567e5/story $HOME/go/bin/story
 
 # Step 6: Install Story
+printGreen "Installing Story..." && sleep 1
 cd $HOME
 rm -rf story
 git clone https://github.com/piplabs/story
