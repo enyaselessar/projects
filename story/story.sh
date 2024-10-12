@@ -37,11 +37,20 @@ wget -q https://story-geth-binaries.s3.us-west-1.amazonaws.com/story-public/stor
 tar -xzf /tmp/story-linux-amd64-0.10.1-57567e5.tar.gz -C /tmp
 sudo cp /tmp/story-linux-amd64-0.10.1-57567e5/story $HOME/go/bin/story
 
-# Step 6: Initialize the Iliad Network Node
+# Step 6: Install Story
+cd $HOME
+rm -rf story
+git clone https://github.com/piplabs/story
+cd story
+git checkout v0.11.0
+go build -o story ./client 
+mv $HOME/story/story $HOME/go/bin/
+
+# Step 7: Initialize the Iliad Network Node
 printGreen "Initializing Iliad network node..." && sleep 1
 $HOME/go/bin/story init --network iliad
 
-# Step 7: Create and Configure systemd Service for Story-Geth
+# Step 8: Create and Configure systemd Service for Story-Geth
 printGreen "Creating systemd service for Story-Geth..." && sleep 1
 sudo tee /etc/systemd/system/story-geth.service > /dev/null <<EOF
 [Unit]
@@ -59,7 +68,7 @@ LimitNOFILE=4096
 WantedBy=multi-user.target
 EOF
 
-# Step 8: Create and Configure systemd Service for Story
+# Step 9: Create and Configure systemd Service for Story
 printGreen "Creating systemd service for Story..." && sleep 1
 sudo tee /etc/systemd/system/story.service > /dev/null <<EOF
 [Unit]
@@ -77,11 +86,11 @@ LimitNOFILE=4096
 WantedBy=multi-user.target
 EOF
 
-# Step 9: Ask for Moniker and Update config.toml
+# Step 10: Ask for Moniker and Update config.toml
 printGreen "Please enter the moniker for your node (e.g., your node's name):" && sleep 1
 read -r moniker
 
-# Step 10: Update Ports in config.toml Based on User Input
+# Step 11: Update Ports in config.toml Based on User Input
 printGreen "Please enter the starting port number (between 11 and 64). Default is 26:" && sleep 1
 read -r start_port
 
@@ -123,7 +132,7 @@ printLine
 sleep 1
 
 
-# Step 11: Update Persistent Peers in config.toml
+# Step 12: Update Persistent Peers in config.toml
 printGreen "Fetching peers and updating persistent_peers in config.toml..." && sleep 1
 URL="https://story-testnet-rpc.itrocket.net/net_info"
 response=$(curl -s $URL)
@@ -136,7 +145,7 @@ sed -i 's|^persistent_peers *=.*|persistent_peers = "'$PEERS'"|' $CONFIG_PATH
 echo "Persistent peers updated in $CONFIG_PATH."
 
 
-# Step 12: Reload systemd, Enable, and Start Services
+# Step 13: Reload systemd, Enable, and Start Services
 printGreen "Reloading systemd, enabling, and starting Story-Geth and Story services..." && sleep 1
 sudo systemctl daemon-reload
 sudo systemctl enable story-geth story
