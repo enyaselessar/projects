@@ -132,14 +132,17 @@ printLine
 sleep 1
 
 
-# Step 11: Update Persistent Peers and Seed in config.toml
-printGreen "Fetching peers-seed and updating persistent_peers in config.toml..." && sleep 1
-SEEDS="51ff395354c13fab493a03268249a74860b5f9cc@story-testnet-seed.itrocket.net:26656"
-PEERS="2f372238bf86835e8ad68c0db12351833c40e8ad@story-testnet-peer.itrocket.net:26656,fa58ccd87f82aec19746b8908c30fd2a712122c3@212.192.222.42:26656,a932908520c8bf2514b0eadd1952e97b04e02813@194.163.167.132:26656,4e159edf6e7affa518bba93c0e25a2d7bd36e187@185.197.251.19:26656,3833efddd6665ffaf20950abad7c8bb4918c0161@65.109.111.234:26656,67630373dd14bd9cd2a5beb42d3ad3255b370aa3@194.163.133.213:26656,fcd591a5462974bf684ae596a87796ab56d7a64e@212.192.222.59:26656,3e0cde7382067bc449ec1ad979e136d5de774732@202.61.201.53:26656,2415dfb9dbf3b3ee77824697127aecab87d18598@176.9.54.69:26656,90161a7f82ce5dbfbed1a2a9d40d4103730cff0f@5.9.87.231:26656,1f4c8031c89661f214678ea5b6157a7a000d994f@109.199.100.6:26656"
-sed -i -e "/^\[p2p\]/,/^\[/{s/^[[:space:]]*seeds *=.*/seeds = \"$SEEDS\"/}" \
-       -e "/^\[p2p\]/,/^\[/{s/^[[:space:]]*persistent_peers *=.*/persistent_peers = \"$PEERS\"/}" $HOME/.story/story/config/config.toml
+# Step 11: Update Persistent Peers in config.toml
+printGreen "Fetching peers and updating persistent_peers in config.toml..." && sleep 1
+URL="https://story-testnet-rpc.itrocket.net/net_info"
+response=$(curl -s $URL)
+PEERS=$(echo $response | jq -r '.result.peers[] | "\(.node_info.id)@\(.remote_ip):" + (.node_info.listen_addr | capture("(?<ip>.+):(?<port>[0-9]+)$").port)' | paste -sd "," -)
+echo "PEERS=\"$PEERS\""
 
-echo "Persistent peers and seed updated in $CONFIG_PATH."
+# Update the persistent_peers in the config.toml file
+sed -i 's|^persistent_peers *=.*|persistent_peers = "'$PEERS'"|' $CONFIG_PATH
+
+echo "Persistent peers updated in $CONFIG_PATH."
 
 # Step 12: Download genesis and addrbook
 printGreen "Downloading genesis and addrbook..." && sleep 1
