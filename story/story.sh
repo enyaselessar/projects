@@ -15,7 +15,7 @@ sudo apt install -y wget curl lz4 jq
 # Step 3: Install Go
 printGreen "Installing Go..." && sleep 1
 cd $HOME
-ver="1.22.0"
+ver="1.22.3"
 wget "https://go.dev/dl/go$ver.linux-amd64.tar.gz"
 sudo rm -rf /usr/local/go
 sudo tar -C /usr/local -xzf "go$ver.linux-amd64.tar.gz"
@@ -24,27 +24,18 @@ echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.bash_profile
 source ~/.bash_profile
 go version
 
-# Step 4: Download and Install Story Story-Geth Binary
-printGreen "Downloading and installing Story Story-Geth binaries..." && sleep 1
-cd $HOME
-rm -rf bin
-mkdir bin
-cd bin
-wget https://story-geth-binaries.s3.us-west-1.amazonaws.com/geth-public/geth-linux-amd64-0.9.3-b224fdf.tar.gz
-tar -xvzf geth-linux-amd64-0.9.3-b224fdf.tar.gz
-mv ~/bin/geth-linux-amd64-0.9.3-b224fdf/geth ~/go/bin/
-[ ! -d "$HOME/.story/story" ] && mkdir -p "$HOME/.story/story"
-[ ! -d "$HOME/.story/geth" ] && mkdir -p "$HOME/.story/geth"
+# Step 4: Download and Install Story-Geth Binary
+printGreen "Downloading and installing Story-Geth binary..." && sleep 1
+wget -q https://story-geth-binaries.s3.us-west-1.amazonaws.com/geth-public/geth-linux-amd64-0.9.3-b224fdf.tar.gz -O /tmp/geth-linux-amd64-0.9.3-b224fdf.tar.gz
+tar -xzf /tmp/geth-linux-amd64-0.9.3-b224fdf.tar.gz -C /tmp
+[ ! -d "$HOME/go/bin" ] && mkdir -p $HOME/go/bin
+sudo cp /tmp/geth-linux-amd64-0.9.3-b224fdf/geth $HOME/go/bin/story-geth
 
-# Step 5: Install Story
-printGreen "Installing Story..." && sleep 1
-cd $HOME
-rm -rf story
-git clone https://github.com/piplabs/story
-cd story
-git checkout v0.11.0
-go build -o story ./client 
-mv $HOME/story/story $HOME/go/bin/
+# Step 5: Download and Install Story Binary
+printGreen "Downloading and installing Story binary..." && sleep 1
+wget -q https://story-geth-binaries.s3.us-west-1.amazonaws.com/story-public/story-linux-amd64-0.11.0-aac4bfe.tar.gz -O /tmp/story-linux-amd64-0.11.0-aac4bfe.tar.gz
+tar -xzf /tmp/story-linux-amd64-0.11.0-aac4bfe.tar.gz -C /tmp
+sudo cp /tmp/story-linux-amd64-0.11.0-aac4bfe/story $HOME/go/bin/story
 
 # Step 6: Initialize the Iliad Network Node
 printGreen "Initializing Iliad network node..." && sleep 1
@@ -144,13 +135,8 @@ sed -i 's|^persistent_peers *=.*|persistent_peers = "'$PEERS'"|' $CONFIG_PATH
 
 echo "Persistent peers updated in $CONFIG_PATH."
 
-# Step 12: Download genesis and addrbook
-printGreen "Downloading genesis and addrbook..." && sleep 1
-wget -O $HOME/.story/story/config/genesis.json https://server-3.itrocket.net/testnet/story/genesis.json
-wget -O $HOME/.story/story/config/addrbook.json  https://server-3.itrocket.net/testnet/story/addrbook.json
 
-
-# Step 13: Reload systemd, Enable, and Start Services
+# Step 12: Reload systemd, Enable, and Start Services
 printGreen "Reloading systemd, enabling, and starting Story-Geth and Story services..." && sleep 1
 sudo systemctl daemon-reload
 sudo systemctl enable story-geth story
